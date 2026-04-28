@@ -1,0 +1,874 @@
+<!doctype html>
+<html lang="ca">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EXÀMEN DE L'ANTIGA ROMA</title>
+
+  <!-- PDF (OPCIÓN B): jsPDF -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#0b1020;
+      --text:#e8ecff;
+      --muted:#b9c2ff;
+      --border:#263159;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --ok:#22c55e;
+      --bad:#ef4444;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 800px at 30% 10%, #16204a 0%, var(--bg) 55%);
+      color: var(--text);
+      text-transform: uppercase;
+    }
+    .wrap{ max-width: 980px; margin: 0 auto; padding: 18px 14px 40px; }
+
+    header{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px 14px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(6px);
+    }
+    .titleRow{
+      display:flex; align-items:flex-start; justify-content:space-between; gap: 12px;
+      flex-wrap: wrap;
+    }
+    h1{
+      font-size: clamp(18px, 3.2vw, 28px);
+      margin: 0;
+      letter-spacing: .5px;
+      line-height: 1.15;
+      flex: 1 1 520px;
+    }
+    .smallBtns{ display:flex; gap: 8px; align-items:center; flex: 0 0 auto; }
+    .btn{
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 900;
+      letter-spacing: .5px;
+      user-select: none;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      box-shadow: 0 6px 14px rgba(0,0,0,.25);
+    }
+    .btn:active{ transform: translateY(1px); }
+    .mini{
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-weight: 1000;
+      font-size: 14px;
+    }
+    .hint{
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .qCard{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+      margin: 100px 0; /* 100PX ENTRE PREGUNTAS */
+    }
+    .qHead{
+      display:flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items:flex-start;
+      flex-wrap: wrap;
+    }
+    .qText{
+      font-size: 18px;
+      line-height: 1.25;
+      font-weight: 1000;
+      margin: 0;
+      flex: 1 1 520px;
+    }
+
+    .options{
+      margin-top: 12px;
+      display:grid;
+      gap: 10px;
+    }
+    .opt{
+      border: 2px solid transparent;
+      border-radius: 14px;
+      padding: 10px 10px;
+      background: rgba(255,255,255,.05);
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      cursor:pointer;
+      transition: transform .05s ease, border-color .12s ease, background .12s ease;
+    }
+    .opt:active{ transform: translateY(1px); }
+    .opt.selected{
+      border-color: #000000; /* RECUADRO NEGRO */
+      background: rgba(255,255,255,.07);
+    }
+    .optKey{
+      font-weight: 1100;
+      min-width: 44px;
+      display:flex;
+      justify-content:center;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.15);
+      background: rgba(0,0,0,.20);
+    }
+    .optText{
+      font-size: 16px;
+      font-weight: 900;
+      line-height: 1.2;
+      flex: 1 1 auto;
+    }
+
+    .footerBar{
+      margin-top: 16px;
+      display:flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+    .primary{
+      padding: 12px 16px;
+      font-size: 16px;
+      border-radius: 14px;
+    }
+
+    /* WORD HIGHLIGHT (SIN CAMBIAR TEXTO) */
+    .ttsActive{
+      outline: 3px solid rgba(255,255,255,.22);
+      outline-offset: 3px;
+      border-radius: 10px;
+    }
+
+    /* RESULTS */
+    #results{ display:none; }
+    .resultCard{
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 18px 14px;
+      box-shadow: var(--shadow);
+      margin-top: 18px;
+      text-align: center;
+    }
+    .big{
+      font-size: clamp(22px, 4.2vw, 44px);
+      font-weight: 1100;
+      margin: 6px 0 8px;
+      letter-spacing: 1px;
+    }
+    .grade{
+      font-size: clamp(34px, 6.2vw, 64px);
+      font-weight: 1200;
+      margin: 0;
+    }
+    .badList{
+      margin-top: 16px;
+      display:grid;
+      gap: 12px;
+    }
+    .badItem{
+      text-align:left;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .badQ{
+      font-weight: 1100;
+      margin: 0 0 10px;
+      line-height: 1.2;
+      display:flex;
+      gap:10px;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      align-items:flex-start;
+    }
+    .answersRow{
+      display:grid;
+      gap: 8px;
+    }
+    .tag{
+      font-weight: 1100;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+    }
+    .chosen{ color: var(--bad); font-weight: 1100; }
+    .correct{ color: var(--ok); font-weight: 1100; }
+    .note{
+      color: var(--muted);
+      font-weight: 900;
+      line-height: 1.25;
+      margin-top: 10px;
+      text-align:center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="titleRow">
+        <h1 id="titleText">EXÀMEN DE L'ANTIGA ROMA</h1>
+        <div class="smallBtns">
+          <button class="btn mini" id="titlePlay" type="button" aria-label="LLEGIR TÍTOL NORMAL">▶</button>
+          <button class="btn mini" id="titleTurtle" type="button" aria-pressed="false" aria-label="LLEGIR TÍTOL LENT">🐢</button>
+        </div>
+      </div>
+      <div class="hint">
+        CADA TEXT TÉ EL SEU ▶ NORMAL I EL SEU 🐢 LENT. SI PULSAS 🐢 UNA ALTRA VEGADA, ES PARA. EL TEXT NO CANVIA.
+      </div>
+    </header>
+
+    <main id="exam">
+      <div id="questions"></div>
+
+      <div class="footerBar">
+        <button class="btn primary" id="gradePlay" type="button" aria-label="LLEGIR CORREGIR I NOTA NORMAL">▶ LLEGIR</button>
+        <button class="btn primary" id="gradeTurtle" type="button" aria-pressed="false" aria-label="LLEGIR CORREGIR I NOTA LENT">🐢 LENT</button>
+        <button class="btn primary" id="gradeBtn" type="button">CORREGIR I NOTA</button>
+      </div>
+      <div class="note" id="warn"></div>
+    </main>
+
+    <section id="results">
+      <div class="resultCard">
+        <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+          <button class="btn mini" id="resultPlay" type="button">▶</button>
+          <button class="btn mini" id="resultTurtle" type="button" aria-pressed="false">🐢</button>
+        </div>
+        <div class="big" id="resultTitle">TU NOTA ES…</div>
+        <div class="grade" id="resultGrade">0,0 / 10</div>
+
+        <div style="margin-top:14px; display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+          <button class="btn primary" id="pdfPlay" type="button" aria-label="LLEGIR DESCARREGAR PDF NORMAL">▶ LLEGIR</button>
+          <button class="btn primary" id="pdfTurtle" type="button" aria-pressed="false" aria-label="LLEGIR DESCARREGAR PDF LENT">🐢 LENT</button>
+          <button class="btn primary" id="pdfBtn" type="button">DESCARREGAR PDF</button>
+        </div>
+      </div>
+
+      <div class="badList" id="badList"></div>
+      <div class="note" id="backNote"></div>
+    </section>
+  </div>
+
+  <script>
+    // -----------------------------
+    // DATA (SOLO TU CONTENIDO)
+    // -----------------------------
+    const QUESTIONS = [
+      { id: 1,  q: "QUINA ETAPA DE ROMA TENIA EMPERADORS?",
+        opts: { A:"IMPERI", B:"MONARQUIA", C:"REPÚBLICA" }, correct: "A"
+      },
+      { id: 2,  q: "ON ES VA FUNDAR LA CIUTAT DE ROMA?",
+        opts: { A:"A LA MUNTANYA", B:"A LA VORA DEL RIU NIL", C:"A LA VORA DEL RIU TÍBER" }, correct: "C"
+      },
+      { id: 3,  q: "QUI VA FUNDAR ROMA SEGONS LA LLEGENDA?",
+        opts: { A:"JULI CÈSAR", B:"RÒMUL", C:"REM" }, correct: "B"
+      },
+      { id: 4,  q: "QUÈ ERA EL FÒRUM DE LA CIUTAT ROMANA?",
+        opts: { A:"UN TEMPLE", B:"UNA CASA", C:"LA PLAÇA PRINCIPAL DE LA CIUTAT" }, correct: "C"
+      },
+      { id: 5,  q: "QUIN MAR ERA MOLT IMPORTANT PELS ROMANS?",
+        opts: { A:"MAR NEGRE", B:"MAR MEDITARRANI", C:"MAR DEL NORD" }, correct: "B"
+      },
+      { id: 6,  q: "QUI VA CUIDAR DE RÒMUL I REM QUAN EREN PETITS?",
+        opts: { A:"UNA LLOBA", B:"UN PASTOR", C:"UN REI" }, correct: "A"
+      },
+      { id: 7,  q: "DURANT QUINA ETAPA GOVERNAVEN ELS REIS?",
+        opts: { A:"IMPERI", B:"MONARQUIA", C:"REPÚBLICA" }, correct: "B"
+      },
+      { id: 8,  q: "ON LLUITAVEN ELS GLADIADORS?",
+        opts: { A:"AL COLISEUM", B:"AL FÒRUM", C:"AL TEMPLE" }, correct: "A"
+      },
+      { id: 9,  q: "QUINES PERSONES NO TENIEN LLIBERTAT A ROMA?",
+        opts: { A:"PATRICIS", B:"PLEBEUS", C:"ESCLAUS" }, correct: "C"
+      },
+      { id: 10, q: "QUIN ALIMENT MENJAVEN SOVINT ELS ROMANS?",
+        opts: { A:"PA", B:"PATATES FREGIDES", C:"XOCOLATA" }, correct: "A"
+      },
+      { id: 11, q: "QUÈ BEBIEN NORMALMENT ELS ROMANS?",
+        opts: { A:"REFRESCOS", B:"LLET AMB CACAU", C:"VI" }, correct: "C"
+      },
+      { id: 12, q: "COM ES DEIEN ELS SOLDATS ROMANS?",
+        opts: { A:"PLEBEUS", B:"LEGIONARIS", C:"GLADIADORS" }, correct: "B"
+      },
+      { id: 13, q: "QUI EREN LA MAJORIA DE LA POBLACIÓ ROMANA?",
+        opts: { A:"PATRICIS", B:"PLEBEUS", C:"ESCLAUS" }, correct: "B"
+      },
+      { id: 14, q: "QUIN NOM TENIA EL DEU DEL MAR?",
+        opts: { A:"VENUS", B:"NEPTÚ", C:"JÚPITER" }, correct: "B"
+      },
+      { id: 15, q: "QUÈ ENS HAN DEIXAT ELS ROMANS QUE PODEM VEURE AVUI EN DIA?",
+        opts: { A:"PIRÀMIDES", B:"CARRETERES I PONTS", C:"ORDINADORS" }, correct: "B"
+      }
+    ];
+
+    // -----------------------------
+    // STATE
+    // -----------------------------
+    const state = {
+      selected: new Map(), // qid -> 'A'|'B'|'C'
+      slowJob: null,
+      resultSpeechText: "LA TEVA NOTA ÉS… 0,0 / 10"
+    };
+
+    // -----------------------------
+    // SPEECH (NO MODIFICA EL TEXTO)
+    // -----------------------------
+    function supportsSpeech(){
+      return ("speechSynthesis" in window) && ("SpeechSynthesisUtterance" in window);
+    }
+
+    function stopAllSpeech(){
+      try { window.speechSynthesis.cancel(); } catch(e){}
+      stopSlowJob();
+      clearActiveOutline();
+    }
+
+    function stopSlowJob(){
+      if (state.slowJob) state.slowJob.stop = true;
+      state.slowJob = null;
+    }
+
+    function normalizeTextForSpeech(text){
+      return String(text).replace(/\s+/g, " ").trim();
+    }
+
+    function clearActiveOutline(){
+      document.querySelectorAll(".ttsActive").forEach(el => el.classList.remove("ttsActive"));
+    }
+
+function getCatalanVoice(){
+  const voices = window.speechSynthesis.getVoices?.() || [];
+
+  // buscar veus catalanes
+  const ca = voices.filter(v =>
+    (v.lang || "").toLowerCase().startsWith("ca")
+  );
+
+  // prioritzar ca-ES exacta
+  const caES = ca.find(v =>
+    (v.lang || "").toLowerCase() === "ca-es"
+  );
+
+  return caES || ca[0] || voices[0] || null;
+}
+    
+    function speakNormal(text){
+      if (!supportsSpeech()) return;
+      stopAllSpeech();
+      const u = new SpeechSynthesisUtterance(normalizeTextForSpeech(text));
+      const v = getCatalanVoice();
+      if (v) u.voice = v;
+      u.lang = (v && v.lang) ? v.lang : "ca-ES";
+      u.rate = 1.0;
+      u.pitch = 1.0;
+      u.volume = 1.0;
+      window.speechSynthesis.speak(u);
+    }
+
+    async function speakSlowPlain(targetEl, text, job){
+      if (!supportsSpeech()) return;
+
+      stopAllSpeech();
+      state.slowJob = job;
+
+      const raw = normalizeTextForSpeech(text);
+      const words = raw.split(" ");
+
+      const v = getCatalanVoice();
+      const lang = (v && v.lang) ? v.lang : "ca-ES";
+
+      // SOLO RESALTA EL BLOQUE ENTERO (SIN CAMBIAR INNERHTML)
+      if (targetEl) targetEl.classList.add("ttsActive");
+
+      try{
+        for (let i = 0; i < words.length; i++){
+          if (job.stop) break;
+
+          await new Promise(resolve => {
+            if (job.stop) return resolve();
+            const u = new SpeechSynthesisUtterance(words[i]);
+            if (v) u.voice = v;
+            u.lang = lang;
+            u.rate = 0.70;
+            u.pitch = 1.0;
+            u.volume = 1.0;
+            u.onend = () => resolve();
+            u.onerror = () => resolve();
+            window.speechSynthesis.speak(u);
+          });
+
+          await new Promise(r => setTimeout(r, 80));
+        }
+      } finally{
+        if (targetEl) targetEl.classList.remove("ttsActive");
+        stopSlowJob();
+      }
+    }
+
+    // NORMAL: LEE EL TEXTO QUE LE PASAS, SIN TOCAR EL DOM
+    // LENTO: TOGGLE POR BOTÓN, SIN TOCAR EL DOM
+    function speakFromButton(targetEl, rawText, slow, toggleBtn){
+      if (!supportsSpeech()){
+        alert("TU NAVEGADOR NO SOPORTA LECTOR DE VOZ.");
+        return;
+      }
+
+      const clean = normalizeTextForSpeech(rawText);
+
+      if (!slow){
+        if (toggleBtn) toggleBtn.setAttribute("aria-pressed", "false");
+        stopAllSpeech();
+        speakNormal(clean);
+        return;
+      }
+
+      const pressed = (toggleBtn?.getAttribute("aria-pressed") === "true");
+      if (pressed){
+        toggleBtn.setAttribute("aria-pressed", "false");
+        stopAllSpeech();
+        return;
+      }
+
+      if (toggleBtn) toggleBtn.setAttribute("aria-pressed", "true");
+      const job = { stop: false };
+      speakSlowPlain(targetEl, clean, job).finally(() => {
+        if (toggleBtn) toggleBtn.setAttribute("aria-pressed", "false");
+      });
+    }
+
+    // -----------------------------
+    // RENDER
+    // -----------------------------
+    function makeQuestionCard(item){
+      const card = document.createElement("div");
+      card.className = "qCard";
+      card.dataset.qid = item.id;
+
+      const head = document.createElement("div");
+      head.className = "qHead";
+
+      const qP = document.createElement("p");
+      qP.className = "qText";
+      qP.textContent = item.q; // TEXTO FIJO
+
+      const btns = document.createElement("div");
+      btns.className = "smallBtns";
+
+      const play = document.createElement("button");
+      play.type = "button";
+      play.className = "btn mini";
+      play.textContent = "▶";
+
+      const turtle = document.createElement("button");
+      turtle.type = "button";
+      turtle.className = "btn mini";
+      turtle.textContent = "🐢";
+      turtle.setAttribute("aria-pressed", "false");
+
+      play.addEventListener("click", () => speakFromButton(qP, item.q, false, turtle));
+      turtle.addEventListener("click", () => speakFromButton(qP, item.q, true, turtle));
+
+      btns.appendChild(play);
+      btns.appendChild(turtle);
+
+      head.appendChild(qP);
+      head.appendChild(btns);
+
+      const opts = document.createElement("div");
+      opts.className = "options";
+
+      const keys = ["A","B","C"];
+      keys.forEach(k => {
+        const opt = document.createElement("div");
+        opt.className = "opt";
+        opt.dataset.key = k;
+
+        const keyBox = document.createElement("div");
+        keyBox.className = "optKey";
+        keyBox.textContent = `${k})`;
+
+        const text = document.createElement("div");
+        text.className = "optText";
+        text.textContent = item.opts[k]; // TEXTO FIJO
+
+        const playOpt = document.createElement("button");
+        playOpt.type = "button";
+        playOpt.className = "btn mini";
+        playOpt.textContent = "▶";
+
+        const turtleOpt = document.createElement("button");
+        turtleOpt.type = "button";
+        turtleOpt.className = "btn mini";
+        turtleOpt.textContent = "🐢";
+        turtleOpt.setAttribute("aria-pressed", "false");
+
+        // ✅ SOLO LEE EL TEXTO, SIN "OPCIÓN A/B/C", SIN "A)"
+        const speechText = item.opts[k];
+
+        playOpt.addEventListener("click", (e) => {
+          e.stopPropagation();
+          speakFromButton(text, speechText, false, turtleOpt);
+        });
+        turtleOpt.addEventListener("click", (e) => {
+          e.stopPropagation();
+          speakFromButton(text, speechText, true, turtleOpt);
+        });
+
+        const right = document.createElement("div");
+        right.style.display = "flex";
+        right.style.gap = "8px";
+        right.style.alignItems = "center";
+        right.appendChild(playOpt);
+        right.appendChild(turtleOpt);
+
+        opt.appendChild(keyBox);
+        opt.appendChild(text);
+        opt.appendChild(right);
+
+        opt.addEventListener("click", () => selectOption(item.id, k));
+        opts.appendChild(opt);
+      });
+
+      card.appendChild(head);
+      card.appendChild(opts);
+      return card;
+    }
+
+    function render(){
+      const root = document.getElementById("questions");
+      root.innerHTML = "";
+      QUESTIONS.forEach(q => root.appendChild(makeQuestionCard(q)));
+      refreshSelections();
+    }
+
+    function refreshSelections(){
+      document.querySelectorAll(".qCard").forEach(card => {
+        const qid = Number(card.dataset.qid);
+        const chosen = state.selected.get(qid) || null;
+        card.querySelectorAll(".opt").forEach(opt => {
+          const k = opt.dataset.key;
+          opt.classList.toggle("selected", chosen === k);
+        });
+      });
+    }
+
+    function selectOption(qid, key){
+      state.selected.set(qid, key);
+      refreshSelections();
+    }
+
+    function ensureAllAnswered(){
+      for (const q of QUESTIONS){
+        if (!state.selected.get(q.id)) return false;
+      }
+      return true;
+    }
+
+    // -----------------------------
+    // PDF (DESCARGA MANUAL)
+    // -----------------------------
+    function generateAndDownloadPDF(){
+      const { jsPDF } = window.jspdf || {};
+      if (!jsPDF){
+        alert("NO SE HA PODIDO CARGAR EL GENERADOR DE PDF.");
+        return;
+      }
+
+      const doc = new jsPDF({ unit: "pt", format: "a4" });
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+      const margin = 44;
+      const maxW = pageW - margin * 2;
+
+      const title = "EXÀMEN DE LA CÈL·LULA";
+      const when = new Date().toLocaleString("es-ES").toUpperCase();
+
+      let y = margin;
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text(title, margin, y);
+      y += 18;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text(`FECHA: ${when}`, margin, y);
+      y += 18;
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.text(state.resultSpeechText.toUpperCase(), margin, y);
+      y += 18;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+
+      function addLines(text){
+        const lines = doc.splitTextToSize(String(text).toUpperCase(), maxW);
+        for (const line of lines){
+          if (y > pageH - margin){
+            doc.addPage();
+            y = margin;
+          }
+          doc.text(line, margin, y);
+          y += 16;
+        }
+      }
+
+      QUESTIONS.forEach((q) => {
+        const chosenKey = state.selected.get(q.id) || "";
+        const chosenLine = chosenKey ? `ELEGIDA: ${chosenKey}) ${q.opts[chosenKey]}` : "ELEGIDA: NO CONTESTASTE";
+
+        addLines(`${q.id}) ${q.q}`);
+        addLines(`A) ${q.opts.A}`);
+        addLines(`B) ${q.opts.B}`);
+        addLines(`C) ${q.opts.C}`);
+        addLines(chosenLine);
+        y += 10;
+      });
+
+      doc.save("EXAMEN_ANTIGA_ROMA.pdf");
+    }
+
+    // -----------------------------
+    // GRADING
+    // -----------------------------
+    function grade(){
+      stopAllSpeech();
+
+      const total = QUESTIONS.length;
+      let correctCount = 0;
+      const wrongItems = [];
+
+      for (const q of QUESTIONS){
+        const chosen = state.selected.get(q.id) || null;
+        const isCorrect = chosen && chosen === q.correct;
+        if (isCorrect) correctCount++;
+        else wrongItems.push({ q, chosen, correct: q.correct });
+      }
+
+      const score10 = (correctCount / total) * 10;
+      const scoreStr = score10.toFixed(1).replace(".", ",");
+
+      state.resultSpeechText = `TU NOTA ES… ${scoreStr} / 10`;
+
+      document.getElementById("exam").style.display = "none";
+      document.getElementById("results").style.display = "block";
+
+      document.getElementById("resultTitle").textContent = "TU NOTA ES…";
+      document.getElementById("resultGrade").textContent = `${scoreStr} / 10`;
+
+      const badList = document.getElementById("badList");
+      badList.innerHTML = "";
+
+      if (wrongItems.length === 0){
+        const allGood = document.createElement("div");
+        allGood.className = "badItem";
+        allGood.innerHTML = `<p class="badQ">¡TODO PERFECTO! ✅</p>`;
+        badList.appendChild(allGood);
+      } else {
+        wrongItems.forEach(w => {
+          const item = document.createElement("div");
+          item.className = "badItem";
+
+          const qLine = document.createElement("div");
+          qLine.className = "badQ";
+
+          const qText = document.createElement("div");
+          qText.textContent = w.q.q; // YA ES "PREGUNTA X. ..."
+
+          const qBtns = document.createElement("div");
+          qBtns.className = "smallBtns";
+
+          const bPlay = document.createElement("button");
+          bPlay.type = "button";
+          bPlay.className = "btn mini";
+          bPlay.textContent = "▶";
+
+          const bTurtle = document.createElement("button");
+          bTurtle.type = "button";
+          bTurtle.className = "btn mini";
+          bTurtle.textContent = "🐢";
+          bTurtle.setAttribute("aria-pressed", "false");
+
+          bPlay.addEventListener("click", () => speakFromButton(qText, w.q.q, false, bTurtle));
+          bTurtle.addEventListener("click", () => speakFromButton(qText, w.q.q, true, bTurtle));
+
+          qBtns.appendChild(bPlay);
+          qBtns.appendChild(bTurtle);
+
+          qLine.appendChild(qText);
+          qLine.appendChild(qBtns);
+
+          const answers = document.createElement("div");
+          answers.className = "answersRow";
+
+          const chosenText = w.chosen ? `${w.chosen}) ${w.q.opts[w.chosen]}` : "NO CONTESTASTE";
+          const correctText = `${w.correct}) ${w.q.opts[w.correct]}`;
+
+          const chosenRow = document.createElement("div");
+          chosenRow.className = "tag chosen";
+          const chosenSpeech = `LA TEVA RESPOSTA. ${chosenText}`;
+          chosenRow.textContent = `LA TEVA RESPOSTA: ${chosenText}`;
+
+          const correctRow = document.createElement("div");
+          correctRow.className = "tag correct";
+          const correctSpeech = `RESPOSTA CORRECTA. ${correctText}`;
+          correctRow.textContent = `RESPOSTA CORRECTA: ${correctText}`;
+
+          function makeReadBtns(targetEl, speechText){
+            const wrap = document.createElement("div");
+            wrap.className = "smallBtns";
+
+            const p = document.createElement("button");
+            p.type = "button";
+            p.className = "btn mini";
+            p.textContent = "▶";
+
+            const t = document.createElement("button");
+            t.type = "button";
+            t.className = "btn mini";
+            t.textContent = "🐢";
+            t.setAttribute("aria-pressed", "false");
+
+            p.addEventListener("click", () => speakFromButton(targetEl, speechText, false, t));
+            t.addEventListener("click", () => speakFromButton(targetEl, speechText, true, t));
+
+            wrap.appendChild(p);
+            wrap.appendChild(t);
+            return wrap;
+          }
+
+          const chosenWrap = document.createElement("div");
+          chosenWrap.style.display = "flex";
+          chosenWrap.style.gap = "10px";
+          chosenWrap.style.justifyContent = "space-between";
+          chosenWrap.style.alignItems = "flex-start";
+          chosenWrap.style.flexWrap = "wrap";
+          chosenWrap.appendChild(chosenRow);
+          chosenWrap.appendChild(makeReadBtns(chosenRow, chosenSpeech));
+
+          const correctWrap = document.createElement("div");
+          correctWrap.style.display = "flex";
+          correctWrap.style.gap = "10px";
+          correctWrap.style.justifyContent = "space-between";
+          correctWrap.style.alignItems = "flex-start";
+          correctWrap.style.flexWrap = "wrap";
+          correctWrap.appendChild(correctRow);
+          correctWrap.appendChild(makeReadBtns(correctRow, correctSpeech));
+
+          answers.appendChild(chosenWrap);
+          answers.appendChild(correctWrap);
+
+          item.appendChild(qLine);
+          item.appendChild(answers);
+          badList.appendChild(item);
+        });
+      }
+
+      document.getElementById("backNote").textContent = "SI VOLS REPETIR, TORNA A CARREGAR LA PÀGINA.";
+    }
+
+    // -----------------------------
+    // EVENTS
+    // -----------------------------
+    function attachHeaderControls(){
+      const titleEl = document.getElementById("titleText");
+      const titlePlay = document.getElementById("titlePlay");
+      const titleTurtle = document.getElementById("titleTurtle");
+      const raw = "EXÀMEN DE L'ANTIGA ROMA";
+
+      titlePlay.addEventListener("click", () => speakFromButton(titleEl, raw, false, titleTurtle));
+      titleTurtle.addEventListener("click", () => speakFromButton(titleEl, raw, true, titleTurtle));
+    }
+
+    function attachGradeControls(){
+      const gradeBtn = document.getElementById("gradeBtn");
+      const gradePlay = document.getElementById("gradePlay");
+      const gradeTurtle = document.getElementById("gradeTurtle");
+      const raw = "CORREGIR Y NOTA";
+
+      gradePlay.addEventListener("click", () => speakFromButton(gradeBtn, raw, false, gradeTurtle));
+      gradeTurtle.addEventListener("click", () => speakFromButton(gradeBtn, raw, true, gradeTurtle));
+
+      gradeBtn.addEventListener("click", () => {
+        const ok = ensureAllAnswered();
+        const warn = document.getElementById("warn");
+        if (!ok){
+          const msg = "FALTEN PREGUNTES PER RESPONDRE, RESPONT-LES TOTES ABANS DE CORREGIR.";
+          warn.textContent = msg;
+          speakNormal(msg);
+          return;
+        }
+        warn.textContent = "";
+        grade();
+      });
+    }
+
+    function attachResultControls(){
+      const play = document.getElementById("resultPlay");
+      const turtle = document.getElementById("resultTurtle");
+      const title = document.getElementById("resultTitle");
+
+      play.addEventListener("click", () => speakFromButton(title, state.resultSpeechText, false, turtle));
+      turtle.addEventListener("click", () => speakFromButton(title, state.resultSpeechText, true, turtle));
+    }
+
+    function attachPdfControls(){
+      const pdfBtn = document.getElementById("pdfBtn");
+      const pdfPlay = document.getElementById("pdfPlay");
+      const pdfTurtle = document.getElementById("pdfTurtle");
+      const raw = "DESCARGAR PDF";
+
+      pdfPlay.addEventListener("click", () => speakFromButton(pdfBtn, raw, false, pdfTurtle));
+      pdfTurtle.addEventListener("click", () => speakFromButton(pdfBtn, raw, true, pdfTurtle));
+
+      pdfBtn.addEventListener("click", () => generateAndDownloadPDF());
+    }
+
+    function warmVoices(){
+      if (!supportsSpeech()) return;
+      window.speechSynthesis.getVoices();
+    }
+
+    // INIT
+    render();
+    attachHeaderControls();
+    attachGradeControls();
+    attachResultControls();
+    attachPdfControls();
+    warmVoices();
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) stopAllSpeech();
+    });
+  </script>
+</body>
+</html>
